@@ -29,6 +29,7 @@ async function run() {
     const database = client.db("panda"); //connected to db
     const products = database.collection("products"); //connected to products table
     const orders = database.collection("orders"); //connected to orders table
+    const promotions = database.collection("promotions"); //connected to promotions table
     //get rest methods
     app.get("/products", async (req, res) => {
       const filter = {};
@@ -36,13 +37,26 @@ async function run() {
       res.status(200).send(result);
     });
 
-    app.get("/orders", async(req, res) => {
+    app.get("/orders", async (req, res) => {
       const query = req.query;
       let filter = {};
       if (query.category === "pending") filter = { status: "pending" };
       if (query.category === "confirmed") filter = { status: "confirmed" };
       if (query.category === "cancelled") filter = { status: "cancelled" };
       const result = await orders.find(filter).toArray();
+      res.send(result);
+    });
+
+    app.get("/promotions", async (req, res) => {
+      let filter = {};
+      const result = await promotions.find(filter).toArray();
+      res.send(result);
+    });
+
+    app.get("/promotions/:id", async (req, res) => {
+      const id = req.params.id;
+      let filter = { _id: new ObjectId(id) };
+      const result = await promotions.findOne(filter);
       res.send(result);
     });
 
@@ -54,13 +68,38 @@ async function run() {
       res.status(201).send(result);
     });
 
+    app.post("/promotions", async (req, res) => {
+      const data = req.body;
+      console.log(data);
+      const result = await promotions.insertOne(data);
+      res.status(201).send(result);
+    });
 
     //patch apis
-    app.patch('/orders/:id',async (req,res)=>{
-      const id=req.params.id;
-      const data=req.body;
-      const result=await orders.updateOne({_id:new ObjectId(id)},{$set:data})
+    app.patch("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const result = await orders.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: data }
+      );
       res.send(result);
+    });
+
+    app.patch("/promotions/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const result = await promotions.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: data }
+      );
+      res.send(result);
+    });
+    //Delete api
+    app.delete('/products/:id',async(req,res)=>{
+        const id=req.params.id;
+        const result=await products.deleteOne({_id:new ObjectId(id)});
+        res.send(result);
     })
 
     app.post("/orders", async (req, res) => {
