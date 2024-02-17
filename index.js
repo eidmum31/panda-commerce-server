@@ -34,12 +34,12 @@ async function run() {
     //get rest methods
     app.get("/products", async (req, res) => {
       const filter = {};
-      const result = await products.find(filter).toArray();
+      const result = await products.find(filter).toArray(); //get all the products
       res.status(200).send(result);
     });
 
     app.get("/orders", async (req, res) => {
-      const query = req.query;
+      const query = req.query;        //get orders based on category
       let filter = {};
       if (query.category === "pending") filter = { status: "pending" };
       if (query.category === "confirmed") filter = { status: "confirmed" };
@@ -49,20 +49,20 @@ async function run() {
     });
 
     app.get("/promotions", async (req, res) => {
-      let filter = {};
+      let filter = {};  //get all the promotions
       const result = await promotions.find(filter).toArray();
       res.send(result);
     });
 
     app.get("/promotions/:id", async (req, res) => {
-      const id = req.params.id;
+      const id = req.params.id;  //get a specific promotion by id
       let filter = { _id: new ObjectId(id) };
       const result = await promotions.findOne(filter);
       res.send(result);
     });
 
     app.get("/promos", async (req, res) => {
-      const promo = req.query.promo;
+      const promo = req.query.promo;    //validate promo for not found,limit reached,expired or deactive
       const filter = { promo };
       const result = await promotions.findOne(filter);
       var givenDate = new Date(result?.end); // Example: February 17, 2024
@@ -104,7 +104,7 @@ async function run() {
 
     //post request
     app.post("/products", async (req, res) => {
-      const data = req.body;
+      const data = req.body;       //add a new product
       console.log(data);
       const result = await products.insertOne(data);
       res.status(201).send(result);
@@ -112,15 +112,21 @@ async function run() {
 
     app.post("/promotions", async (req, res) => {
       const data = req.body;
-      console.log(data);
+      console.log(data);          //add a new promotion
       const result = await promotions.insertOne(data);
+      res.status(201).send(result);
+    });
+
+    app.post("/orders", async (req, res) => {
+      const data = req.body;           //post a new order
+      const result = await orders.insertOne(data);
       res.status(201).send(result);
     });
 
     //patch apis
     app.patch("/orders/:id", async (req, res) => {
       const id = req.params.id;
-      const data = req.body;
+      const data = req.body;           //update order status from pending to confirmed or cancelled
       const result = await orders.updateOne(
         { _id: new ObjectId(id) },
         { $set: data }
@@ -130,7 +136,7 @@ async function run() {
 
     app.patch("/promotions/:id", async (req, res) => {
       const id = req.params.id;
-      const data = req.body;
+      const data = req.body;        //update promotions  or toogle promotion active status
       const result = await promotions.updateOne(
         { _id: new ObjectId(id) },
         { $set: data }
@@ -139,16 +145,12 @@ async function run() {
     });
     //Delete api
     app.delete("/products/:id", async (req, res) => {
-      const id = req.params.id;
+      const id = req.params.id;       //delete a product
       const result = await products.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
-    app.post("/orders", async (req, res) => {
-      const data = req.body;
-      const result = await orders.insertOne(data);
-      res.status(201).send(result);
-    });
+  
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
