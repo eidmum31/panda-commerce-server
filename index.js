@@ -1,9 +1,10 @@
 const express = require("express"); //importing express
 const cors = require("cors"); //importing cors
+require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb"); //importing mongodb
 
 const app = express();
-const port = 3000; //defining port number
+const port=process.env.PORT||3000;//defining port number
 
 //middlewars
 app.use(express.json());
@@ -60,6 +61,47 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/promos", async (req, res) => {
+      const promo = req.query.promo;
+      const filter = { promo };
+      const result = await promotions.findOne(filter);
+      var givenDate = new Date(result?.end); // Example: February 17, 2024
+
+      // Get the current date
+      var currentDate = new Date();
+      const newResult = {};
+      if (!result) {
+        newResult.message = "Promo is not exist";
+        newResult.success = false;
+        console.log(newResult);
+        res.send(newResult);
+      } 
+      else if(!result.use){
+        newResult.message = "Promo reached it's limit";
+        newResult.success = false;
+        res.send(newResult);
+      }
+      
+      else if (!result.active) {
+        newResult.message = "Promo is not active";
+        newResult.success = false;
+        console.log(newResult);
+        res.send(newResult);
+      } else if (givenDate < currentDate) {
+        
+        newResult.message = "Promo is expired";
+        newResult.success = false;
+        console.log(newResult);
+        res.send(newResult);
+      } else {
+        newResult.success = true;
+        newResult.rate = result.rate;
+        await promotions.updateOne(filter,{$set:{use:parseInt(result.use)-1}});
+        console.log(newResult);
+        res.send(newResult);
+      }
+    });
+
     //post request
     app.post("/products", async (req, res) => {
       const data = req.body;
@@ -96,11 +138,11 @@ async function run() {
       res.send(result);
     });
     //Delete api
-    app.delete('/products/:id',async(req,res)=>{
-        const id=req.params.id;
-        const result=await products.deleteOne({_id:new ObjectId(id)});
-        res.send(result);
-    })
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await products.deleteOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
 
     app.post("/orders", async (req, res) => {
       const data = req.body;
