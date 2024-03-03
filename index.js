@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 const uri =
-  "mongodb+srv://mdzuneadabedineidmum:cyadfcayyYL1RxAb@practice.x1enzr7.mongodb.net/?retryWrites=true&w=majority"; //database url
+  "mongodb+srv://mdzuneadabedineidmum:QvBebqm9i8sDWEgm@practice.x1enzr7.mongodb.net/?retryWrites=true&w=majority"; //database url
 
 const client = new MongoClient(uri, {
   //making a mongo client
